@@ -26,4 +26,6 @@ jobs:
       - name: Parsing tests
         run: python -m pytest tests -q
       - name: Scripts and queue build
-        run: python -m py_compile results.py pdfs.py gemcommon.py gemresult.py family.py setup_family.py && python -c "from family import PROJECTS, items; print({p['name']: len(items(p['list'])) for p in PROJECTS})"
+        run: |
+          python -m py_compile results.py pdfs.py gemcommon.py gemresult.py family.py setup_family.py
+          python -c "from family import PROJECTS, items; print({p['name']: len(items(p['list'])) for p in PROJECTS})"
