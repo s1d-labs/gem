@@ -1,11 +1,12 @@
 """Task `results`: for each GeM bid id in the claimed item, fetch the public bid-result page, store the parsed bidders (one record
-per bid id) and the raw page (gzip) in the family's bucket at <project>/results/<id>.html.gz.
+per bid id) and the raw pages of the item as one archive in the family's bucket at <project>/results/<item key>.tar.gz
+(members <id>.html): one upload per item instead of one per page (uploads from India to the bucket are slow one by one).
 
 Outcomes per id: parsed result; no public result (307 to GeM's newer evaluation page, which needs a session); blank template
 (the id is not a public bid); or a fetch failure (5xx / empty / connection), retried once after a pause and otherwise reported
 with hub.failure("result", id) so it can be retried later without re-fetching the rest of the item.
 """
-import gzip, os, sys, time
+import io, os, sys, tarfile, time
 
 from scrape_hub_client import HubClient
 
@@ -13,6 +14,15 @@ import gemcommon as g
 from gemresult import parse
 
 PROJECT = os.environ["SCRAPE_POOL_PROJECT"]
+
+
+def tar(files, mode):
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode=mode) as t:
+        for name, body in files:
+            ti = tarfile.TarInfo(name); ti.size = len(body); ti.mtime = int(time.time())
+            t.addfile(ti, io.BytesIO(body))
+    return buf.getvalue()
 
 
 def fetch_one(hub, s, pid):
@@ -55,10 +65,10 @@ def main():
                                        else "no result on this page (e.g. an old-style reverse auction, GEM/yyyy/RA/n)")
                     hub.record(pid, d); n_ok += 1
                     if d["public"]:
-                        files.append((f"results/{pid}.html.gz", gzip.compress(body, 6), "application/gzip"))
+                        files.append((f"{pid}.html", body))
                 time.sleep(g.gap(hub))
             if files:
-                hub.upload_many(files)
+                hub.upload_many([(f"results/{item['key']}.tar.gz", tar(files, "w:gz"), "application/gzip")])
             if stopped:
                 hub.complete([item["key"]], "failed", error="stopped before the end of the item (time up)")
                 break

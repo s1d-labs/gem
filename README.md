@@ -4,8 +4,8 @@ A family of the s1d-labs scrape pool. It fetches public pages of GeM's bid porta
 
 | Task | Page | Stored |
 |---|---|---|
-| `results` | `/bidding/bid/getBidResultView/<id>`: every bidder, offered make/model, technical result, price-stage quotes | one record per id (parsed, `gemresult.py`) + the page gzipped at `<project>/results/<id>.html.gz` in the family's bucket |
-| `pdfs` | `/showbidDocument/<id>`: the bid document | `<project>/pdf/<id>.pdf` in the family's bucket + one record per id (size, checksum) |
+| `results` | `/bidding/bid/getBidResultView/<id>`: every bidder, offered make/model, technical result, price-stage quotes | one record per id (parsed, `gemresult.py`) + the raw pages of each queue item as one archive `<project>/results/<item>.tar.gz` in the family bucket |
+| `pdfs` | `/showbidDocument/<id>`: the bid document | one tar per queue item `<project>/pdf/<item>.tar` (members `<id>.pdf`) in the family bucket + one record per id (archive, size, checksum) |
 
 - GeM answers only from India: the projects use `geo="IN"`, so the work runs on the pool's India servers only.
 - Pace: about 2.5 requests/s per worker outside 10:00-18:00 IST and about 0.5 requests/s inside it (GeM itself returns about 10%

@@ -1,10 +1,11 @@
 """Task `pdfs`: for each GeM bid id in the claimed item, fetch the bid document (showbidDocument/<id>) and store it in the family's
-bucket at <project>/pdf/<id>.pdf; one record per id with its size and checksum. The PDFs are parsed later, off the pool.
+bucket, packed per item as one tar at <project>/pdf/<item key>.tar (members <id>.pdf; PDFs don't compress); one record per
+id with its archive, size and checksum. The PDFs are parsed later, off the pool.
 
 A 200 with an empty body or a 5xx is retried once after a pause; still failing -> hub.failure("pdf", id) (GeM serves some documents
 only intermittently, and none for ids that are not public bids).
 """
-import os, sys, time
+import hashlib, io, os, sys, tarfile, time
 
 from scrape_hub_client import HubClient
 
@@ -41,13 +42,20 @@ def main():
                 if body is None:
                     hub.failure("pdf", pid, why)
                 else:
-                    files.append((f"pdf/{pid}.pdf", body, "application/pdf"))
+                    files.append((f"{pid}.pdf", body))
                 time.sleep(g.gap(hub))
-            n = 0
-            for i in range(0, len(files), 100):            # about 11 MB per upload call
-                for f, res in zip(files[i:i + 100], hub.upload_many(files[i:i + 100])):
-                    pid = f[0].split("/")[-1][:-4]
-                    hub.record(pid, {"pid": pid, "path": res["path"], "bytes": res["bytes"], "sha256": res["sha256"]}); n += 1
+            if files:
+                buf = io.BytesIO()
+                with tarfile.open(fileobj=buf, mode="w") as t:
+                    for name, body in files:
+                        ti = tarfile.TarInfo(name); ti.size = len(body); ti.mtime = int(time.time())
+                        t.addfile(ti, io.BytesIO(body))
+                res = hub.upload_many([(f"pdf/{item['key']}.tar", buf.getvalue(), "application/x-tar")])[0]
+                for name, body in files:
+                    pid = name[:-4]
+                    hub.record(pid, {"pid": pid, "archive": res["path"], "member": name, "bytes": len(body),
+                                     "sha256": hashlib.sha256(body).hexdigest()})
+            n = len(files)
             if stopped:
                 hub.complete([item["key"]], "failed", error="stopped before the end of the item (time up)")
                 break
