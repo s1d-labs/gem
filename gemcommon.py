@@ -21,6 +21,21 @@ def gap(hub):
     return max(own, (hub.settings.get("delay_ms") or 0) / 1000)
 
 
+class Pace:
+    """Seconds per id, measured; fits(n) = whether n more ids can finish (with uploads) before the run's deadline."""
+    def __init__(self, end):
+        self.end, self.n, self.t = end, 0, 0.0
+
+    def add(self, seconds):
+        self.n += 1; self.t += seconds
+
+    def per_id(self, hub):
+        return self.t / self.n if self.n >= 20 else gap(hub) + 1.0
+
+    def fits(self, hub, n):
+        return time.time() + n * self.per_id(hub) * 1.15 + 45 < self.end
+
+
 def deadline():
     return time.time() + float(os.environ.get("SCRAPE_MAX_HOURS", "1")) * 3600 - 120
 

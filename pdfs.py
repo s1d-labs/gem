@@ -26,10 +26,13 @@ def fetch_one(hub, s, pid):
 def main():
     hub = HubClient(PROJECT, job_index=int(os.environ.get("SCRAPE_JOB_INDEX", 0)), total_jobs=int(os.environ.get("SCRAPE_TOTAL_JOBS", 1)))
     s, end = g.session(), g.deadline()
+    pace = g.Pace(end)
     try:
         while time.time() < end and not g.STOP["now"]:
             if hub.settings.get("paused"):
                 time.sleep(30); continue
+            if not pace.fits(hub, 200):                   # a whole item no longer fits in this run: leave it for the next
+                break
             got = hub.claim(1, steal=True, retry_failed=True)
             if not got:
                 break
@@ -38,12 +41,14 @@ def main():
             for pid in item["payload"]["ids"]:
                 if g.STOP["now"] or time.time() >= end:
                     stopped = True; break
+                t_id = time.time()
                 body, why = fetch_one(hub, s, pid)
                 if body is None:
                     hub.failure("pdf", pid, why)
                 else:
                     files.append((f"{pid}.pdf", body))
                 time.sleep(g.gap(hub))
+                pace.add(time.time() - t_id)
             if files:
                 buf = io.BytesIO()
                 with tarfile.open(fileobj=buf, mode="w") as t:
