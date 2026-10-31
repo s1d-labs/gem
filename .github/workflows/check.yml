@@ -1,8 +1,8 @@
 name: check
 
-# Verifies this family on every push: parsing tests on saved pages (pytest), then scrape-check, which runs setup_family.py and the
-# crawl task against a local stand-in for scrape-hub, the same way the pool runner does, on 2 real queue items (and a rerun).
-# Nothing reaches the real hub. Run it by hand too: Actions -> check -> Run workflow.
+# Parsing tests on saved pages (pytest). GeM answers only from India, so GitHub's runners (US/EU) can't reach it and the
+# template's scrape-check step (2 real items against a local stand-in hub) is not run here; the work itself runs on the pool's
+# India servers (geo="IN" in family.py). Run it by hand too: Actions -> check -> Run workflow.
 on:
   push:
   pull_request:
@@ -25,11 +25,5 @@ jobs:
           python3 -c "import json; [print(c) for c in json.load(open('scrape.json')).get('setup', [])]" | grep -v "requirements.txt" | while IFS= read -r cmd; do bash -c "$cmd"; done
       - name: Parsing tests
         run: python -m pytest tests -q
-      - name: scrape-check (local stand-in hub, 2 real items)
-        run: scrape-check --items 2
-      - uses: actions/upload-artifact@v4
-        if: ${{ always() }}
-        with:
-          name: scrape-check
-          path: .scrape-check/
-          if-no-files-found: ignore
+      - name: Scripts and queue build
+        run: python -m py_compile results.py pdfs.py gemcommon.py gemresult.py family.py setup_family.py && python -c "from family import PROJECTS, items; print({p['name']: len(items(p['list'])) for p in PROJECTS})"
