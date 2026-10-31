@@ -50,6 +50,9 @@ def main():
                     d = parse(body.decode("utf-8", "ignore"))
                     d["pid"] = pid
                     d["public"] = d["bid_number"] is not None
+                    if not d["public"]:
+                        d["reason"] = ("blank template: not a public bid id" if d["blank_template"]
+                                       else "no result on this page (e.g. an old-style reverse auction, GEM/yyyy/RA/n)")
                     hub.record(pid, d); n_ok += 1
                     if d["public"]:
                         files.append((f"results/{pid}.html.gz", gzip.compress(body, 6), "application/gzip"))

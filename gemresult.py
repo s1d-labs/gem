@@ -57,18 +57,25 @@ def parse(html):
         rows = [tr.find_all(["td", "th"]) for tr in trs[1:]]
         rows = [r for r in rows if r and r[0].get_text(strip=True).isdigit()]
         if "Participated" in head and "Status" in head:
+            # columns by header name: older pages have Offered Item + MSE/MII Status, newer (esp. services) EMD Status, no item
+            hcells = [c.get_text(" ", strip=True).lower() for c in trs[0].find_all(["th", "td"])]
+            col = lambda *keys: next((i for i, h in enumerate(hcells) if any(k in h for k in keys)), None)
+            i_sel, i_item, i_part = col("seller"), col("offered"), col("participated")
+            i_tag = col("mse", "mii", "emd")
+            i_st = max((i for i, h in enumerate(hcells) if h.strip() == "status"), default=len(hcells) - 1)
             for r in rows:
-                if len(r) < 6:
+                if len(r) < len(hcells):
                     continue
-                name, tags = _seller(r[1])
-                offered = r[2].get_text(" ", strip=True)
+                name, tags = _seller(r[i_sel if i_sel is not None else 1])
+                offered = r[i_item].get_text(" ", strip=True) if i_item is not None else ""
                 mk = re.search(r"Make\s*:\s*(.*?)\s*(?:Model\s*:|$)", offered)
                 md = re.search(r"Model\s*:\s*(.*)$", offered)
                 out["technical"].append({
                     "s_no": int(r[0].get_text(strip=True)), "seller": name, "seller_tags": tags,
                     "make": mk.group(1).strip() if mk else None, "model": md.group(1).strip() if md else None,
-                    "submitted": r[3].get_text(" ", strip=True) or None, "mse_mii": r[4].get_text(" ", strip=True) or None,
-                    "status": r[5].get_text(" ", strip=True) or None})
+                    "submitted": r[i_part].get_text(" ", strip=True) or None if i_part is not None else None,
+                    "mse_mii": r[i_tag].get_text(" ", strip=True) or None if i_tag is not None else None,
+                    "status": r[i_st].get_text(" ", strip=True) or None})
         elif "Rank" in head and "Total Price" in head:
             for r in rows:
                 if len(r) < 5:
