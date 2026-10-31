@@ -12,6 +12,6 @@ A family of the s1d-labs scrape pool. It fetches public pages of GeM's bid porta
   HTTP 500 at midday), at most 8 workers on the host; the hub's back-off applies on top (`gemcommon.py`).
 - Personal data: result pages carry the buyer official's name, address, e-mail and phone. The parser never extracts them; raw pages
   stay in the private bucket; the saved test pages here have them removed.
-- Pilot: Chhattisgarh state buyers' bids (`data/cg_pids.txt.gz`, 20,116 ids). National lists get added after the pilot is checked.
+- Pilot: Chhattisgarh state buyers' bids (`data/cg_pids.txt.gz`, 20,116 ids), done 2026-10-31. National result pages: `data/held_pids.txt.gz` (4.58M ids).
 
 Setup: change `family.py`, then Actions -> setup. Tests: `python -m pytest tests`.
