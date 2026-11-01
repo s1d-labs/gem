@@ -8,8 +8,8 @@ A family of the s1d-labs scrape pool. It fetches public pages of GeM's bid porta
 | `pdfs` | `/showbidDocument/<id>`: the bid document | one tar per queue item `<project>/pdf/<item>.tar` (members `<id>.pdf`) in the family bucket + one record per id (archive, size, checksum) |
 
 - GeM answers only from India: the projects use `geo="IN"`, so the work runs on the pool's India servers only.
-- Pace: about 2.5 requests/s per worker outside 10:00-18:00 IST and about 0.5 requests/s inside it (GeM itself returns about 10%
-  HTTP 500 at midday), at most 8 workers on the host; the hub's back-off applies on top (`gemcommon.py`).
+- Pace: 0.1 s between requests per worker at all hours; failed requests are retried. At most 20 workers on the host; the hub's
+  back-off applies on top (`gemcommon.py`).
 - Personal data: result pages carry the buyer official's name, address, e-mail and phone. The parser never extracts them; raw pages
   stay in the private bucket; the saved test pages here have them removed.
 - Pilot: Chhattisgarh state buyers' bids (`data/cg_pids.txt.gz`, 20,116 ids), done 2026-10-31. National result pages: `data/held_pids.txt.gz` (4.58M ids).
