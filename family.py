@@ -36,7 +36,7 @@ PROJECTS = [
      "unit_label": "chunk", "record_label": "document", "list": "cg_pdf_retry", "max_workers": 2},
     # national: result pages of every other bid id in the Woodpecker copy (4.58M); bid documents follow once the bucket cap allows
     {"name": f"{FAMILY}-results", "title": "GeM: result pages of all known bids (outside the Chhattisgarh pilot)", "task": "results",
-     "unit_label": "chunk", "record_label": "bid", "list": "held_pids", "max_workers": 12},   # ramping 12 -> 16 -> 20 (owner: aim 40 bids/s)
+     "unit_label": "chunk", "record_label": "bid", "list": "held_pids", "max_workers": 16},   # ramping 12 -> 16 -> 20 (owner: aim 40 bids/s)
 ]
 for p in PROJECTS:
     p.update(target=TARGET, env={}, geo="IN", probe=None)
