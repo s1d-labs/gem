@@ -4,7 +4,7 @@ Queue items hold CHUNK ids each (one upload call per item). Id lists live in dat
 The site answers only from India (geo="IN"): the work runs on the pool's India servers only. GeM refuses foreign IPs, so a
 health check run by the hub (in Germany) would always fail; like the family's other India-only peers, no probe is set.
 Pilot: Chhattisgarh state buyers (20,116 bids), done and checked 2026-10-31. National: result pages of all other known bids
-(data/held_pids.txt.gz, 4.58M); national bid documents get added when the bucket's cap is raised (about 620 GB).
+(data/held_pids.txt.gz, 4.58M), then their bid documents (gem-pdfs, about 620 GB; bucket cap raised to 1 TB).
 """
 import gzip
 import json
@@ -36,7 +36,11 @@ PROJECTS = [
      "unit_label": "chunk", "record_label": "document", "list": "cg_pdf_retry", "max_workers": 2},
     # national: result pages of every other bid id in the Woodpecker copy (4.58M); bid documents follow once the bucket cap allows
     {"name": f"{FAMILY}-results", "title": "GeM: result pages of all known bids (outside the Chhattisgarh pilot)", "task": "results",
-     "unit_label": "chunk", "record_label": "bid", "list": "held_pids", "max_workers": 20},   # ramping 12 -> 16 -> 20 (owner: aim 40 bids/s)
+     "unit_label": "chunk", "record_label": "bid", "list": "held_pids", "max_workers": 28},   # 30 India workers (6 per IP), 2026-11-01
+    {"name": f"{FAMILY}-pdfs", "title": "GeM: bid documents of all known bids (outside the Chhattisgarh pilot)", "task": "pdfs",
+     "unit_label": "chunk", "record_label": "document", "list": "held_pids", "max_workers": 28},
+    {"name": f"{FAMILY}-results-retry", "title": "GeM: result pages that failed twice (GeM's daytime HTTP 500s), second pass", "task": "results",
+     "unit_label": "chunk", "record_label": "bid", "list": "results_retry", "max_workers": 2},
 ]
 for p in PROJECTS:
     p.update(target=TARGET, env={}, geo="IN", probe=None)
