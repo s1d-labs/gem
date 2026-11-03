@@ -1,9 +1,22 @@
 {
   "family": "gem",
-  "about": "GeM (Government e-Marketplace, bidplus.gem.gov.in): public bid-result pages (every bidder, offered make/model, technical result, quotes) and bid documents (PDF). India-only site: runs on the pool's India servers.",
-  "setup": ["pip install -r requirements.txt"],
+  "about": "GeM (Government e-Marketplace, bidplus.gem.gov.in): public bid-result pages (every bidder, offered make/model, technical result, quotes) and bid documents (PDF). India-only site: fetching runs on the pool's India servers; parsing the stored PDFs (pdfparse) runs on GitHub runners.",
+  "setup": [
+    "pip install -r requirements.txt",
+    "command -v pdftotext >/dev/null || { sudo -n apt-get update -qq && sudo -n apt-get install -y -qq poppler-utils; } >/dev/null 2>&1 || true"
+  ],
   "tasks": {
-    "results": ["python", "results.py"],
-    "pdfs": ["python", "pdfs.py"]
+    "results": [
+      "python",
+      "results.py"
+    ],
+    "pdfs": [
+      "python",
+      "pdfs.py"
+    ],
+    "pdfparse": [
+      "python",
+      "pdfparse.py"
+    ]
   }
 }

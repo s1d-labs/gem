@@ -5,6 +5,8 @@ The site answers only from India (geo="IN"): the work runs on the pool's India s
 health check run by the hub (in Germany) would always fail; like the family's other India-only peers, no probe is set.
 Pilot: Chhattisgarh state buyers (20,116 bids), done and checked 2026-10-31. National: result pages of all other known bids
 (data/held_pids.txt.gz, 4.58M), then their bid documents (gem-pdfs, about 620 GB; bucket cap raised to 1 TB).
+Parsing (task pdfparse, project gem-pdf-parse, GitHub runners): its items carry presigned links to the stored tars, so they are
+seeded from the investigation box (woodpecker investigation/gem_pdf_load.py --seed), not from this public repo.
 """
 import gzip
 import json
