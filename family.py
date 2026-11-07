@@ -52,9 +52,11 @@ PROJECTS = [
      "unit_label": "chunk", "record_label": "bid", "list": "results_retry", "max_workers": 2},
     # bid numbers that archived government documents quote but our copies lack (s1d-labs/graph gaps/): number -> internal id
     {"name": f"{FAMILY}-archive-lookup", "title": "GeM: internal ids of bids quoted in archived documents", "task": "lookup",
-     "unit_label": "chunk", "record_label": "bid", "list": "archive_bids", "max_workers": 2, "kind": "bids"},
+     "unit_label": "chunk", "record_label": "bid", "list": "archive_bids", "max_workers": 2, "kind": "bids", "proxy": "IN"},
 ]
 for p in PROJECTS:
     p.update(target=TARGET, env={}, geo="IN", probe=None)
+    p.setdefault("proxy", "")   # "IN": GitHub runners may take the work too, through a borrowed Mumbai proxy (small queues
+                                # otherwise wait behind the big India-server families: servers serve the most waiting first)
 
 PROBES = []

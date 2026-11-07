@@ -9,5 +9,5 @@ for p in PROJECTS:
     its = bid_items(p["list"]) if p.get("kind") == "bids" else items(p["list"])
     register_project(p["name"], title=p["title"], unit_label=p["unit_label"], record_label=p["record_label"],
                      expected_units=len(its), expected_records=sum(i["payload"]["expected"] for i in its))
-    set_pool(p["name"], FAMILY, p["task"], target=p["target"], env=p["env"], probe=p["probe"], max_workers=p["max_workers"], geo=p["geo"])
+    set_pool(p["name"], FAMILY, p["task"], target=p["target"], env=p["env"], probe=p["probe"], max_workers=p["max_workers"], geo=p["geo"], proxy=p["proxy"])
     print(p["name"], "queue:", seed_queue(p["name"], its))
