@@ -17,6 +17,10 @@
     "pdfparse": [
       "python",
       "pdfparse.py"
+    ],
+    "lookup": [
+      "python",
+      "lookup.py"
     ]
   }
 }

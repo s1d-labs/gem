@@ -23,6 +23,13 @@ def ids(name):
         return [l.strip() for l in f if l.strip()]
 
 
+def bid_items(name):
+    """Items of CHUNK bid numbers for the lookup task."""
+    xs = ids(name)
+    return [{"key": f"{name}-{i // CHUNK:05d}", "payload": {"bids": xs[i:i + CHUNK], "expected": len(xs[i:i + CHUNK])}}
+            for i in range(0, len(xs), CHUNK)]
+
+
 def items(name, expected=1):
     xs = ids(name)
     return [{"key": f"{name}-{i // CHUNK:05d}", "payload": {"ids": xs[i:i + CHUNK], "expected": len(xs[i:i + CHUNK]) * expected}}
@@ -43,6 +50,9 @@ PROJECTS = [
      "unit_label": "chunk", "record_label": "document", "list": "held_pids", "max_workers": 28},
     {"name": f"{FAMILY}-results-retry", "title": "GeM: result pages that failed twice (GeM's daytime HTTP 500s), second pass", "task": "results",
      "unit_label": "chunk", "record_label": "bid", "list": "results_retry", "max_workers": 2},
+    # bid numbers that archived government documents quote but our copies lack (s1d-labs/graph gaps/): number -> internal id
+    {"name": f"{FAMILY}-archive-lookup", "title": "GeM: internal ids of bids quoted in archived documents", "task": "lookup",
+     "unit_label": "chunk", "record_label": "bid", "list": "archive_bids", "max_workers": 2, "kind": "bids"},
 ]
 for p in PROJECTS:
     p.update(target=TARGET, env={}, geo="IN", probe=None)
