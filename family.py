@@ -53,6 +53,11 @@ PROJECTS = [
     # bid numbers that archived government documents quote but our copies lack (s1d-labs/graph gaps/): number -> internal id
     {"name": f"{FAMILY}-archive-lookup", "title": "GeM: internal ids of bids quoted in archived documents", "task": "lookup",
      "unit_label": "chunk", "record_label": "bid", "list": "archive_bids", "max_workers": 2, "kind": "bids", "proxy": "IN"},
+    # ... and their result pages and bid documents (ids from gem-archive-lookup, minus ids the national crawl already holds)
+    {"name": f"{FAMILY}-archive-results", "title": "GeM: result pages of bids quoted in archived documents", "task": "results",
+     "unit_label": "chunk", "record_label": "bid", "list": "archive_pids", "max_workers": 4, "proxy": "IN"},
+    {"name": f"{FAMILY}-archive-pdfs", "title": "GeM: bid documents of bids quoted in archived documents", "task": "pdfs",
+     "unit_label": "chunk", "record_label": "document", "list": "archive_pids", "max_workers": 4, "proxy": "IN"},
 ]
 for p in PROJECTS:
     p.update(target=TARGET, env={}, geo="IN", probe=None)
